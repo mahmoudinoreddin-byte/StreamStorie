@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamStorie Player</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #12141a;
+    color: #f2f2f2;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+  p.sub {
+    color: #999;
+    margin-top: 0;
+    font-size: 0.9rem;
+  }
+  audio {
+    width: 100%;
+    margin: 20px 0;
+  }
+  ul#trackList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  ul#trackList li {
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #1c1f27;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  ul#trackList li:hover {
+    background: #262a35;
+  }
+  ul#trackList li.active {
+    background: #3b5bfd;
+    color: #fff;
+  }
+  #status {
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+  <h1>🎧 StreamStorie</h1>
+  <p class="sub">Lecture automatique de la playlist</p>
+
+  <audio id="podcastPlayer" controls></audio>
+  <div id="status">Chargement de la playlist...</div>
+
+  <ul id="trackList"></ul>
+
+<script>
+  // Change this if your playlist file is at a different path
+  const playlistUrl = "playlist.m3u";
+
+  const player = document.getElementById("podcastPlayer");
+  const trackListEl = document.getElementById("trackList");
+  const statusEl = document.getElementById("status");
+
+  let tracks = []; // { title, url }
+  let currentIndex = 0;
+
+  async function loadPlaylist(url) {
+    try {
+      const response = await fetch(url);
+      const text = await response.text();
+      tracks = parseM3U(text);
+
+      if (tracks.length === 0) {
+        statusEl.textContent = "Aucune piste trouvée dans la playlist.";
+        return;
+      }
+
+      renderTrackList();
+      statusEl.textContent = `${tracks.length} piste(s) chargée(s).`;
+      playTrack(0);
+    } catch (err) {
+      statusEl.textContent = "Erreur de chargement de la playlist : " + err.message;
+    }
+  }
+
+  function parseM3U(text) {
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    const result = [];
+    let pendingTitle = null;
+
+    for (const line of lines) {
+      if (line.startsWith("#EXTINF")) {
+        // format: #EXTINF:-1, Title
+        const commaIndex = line.indexOf(",");
+        pendingTitle = commaIndex !== -1 ? line.slice(commaIndex + 1).trim() : "Piste";
+      } else if (!line.startsWith("#")) {
+        result.push({
+          title: pendingTitle || `Piste ${result.length + 1}`,
+          url: line
+        });
+        pendingTitle = null;
+      }
+    }
+    return result;
+  }
+
+  function renderTrackList() {
+    trackListEl.innerHTML = "";
+    tracks.forEach((track, index) => {
+      const li = document.createElement("li");
+      li.textContent = track.title;
+      li.dataset.index = index;
+      li.addEventListener("click", () => playTrack(index));
+      trackListEl.appendChild(li);
+    });
+  }
+
+  function playTrack(index) {
+    if (index < 0 || index >= tracks.length) return;
+    currentIndex = index;
+    player.src = tracks[currentIndex].url;
+    player.play();
+    highlightActive();
+    statusEl.textContent = "Lecture : " + tracks[currentIndex].title;
+  }
+
+  function highlightActive() {
+    [...trackListEl.children].forEach((li, i) => {
+      li.classList.toggle("active", i === currentIndex);
+    });
+  }
+
+  // Auto-play next track when current one ends
+  player.addEventListener("ended", () => {
+    playTrack(currentIndex + 1);
+  });
+
+  loadPlaylist(playlistUrl);
+</script>
+
+</body>
+</html>
