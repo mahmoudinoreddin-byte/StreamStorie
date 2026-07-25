@@ -1,7 +1,10 @@
 #EXTM3U
-https://drive.google.com/uc?export=download&id=1JWrGcBmxf51_1oIo9oXp8F-zSxf_vrTn
-https://drive.google.com/uc?export=download&id=1VsBmr1x9xUw-5l3d1kf8ajOzF4pNGgDK
-https://drive.google.com/uc?export=download&id=12AoTSoZYQ4taDSVhSC6kOp8xwVm3vC5B
 
+#EXTINF:-1, Piste 1
+https://drive.google.com/uc?export=download&confirm=t&id=1JWrGcBmxf51_1oIo9oXp8F-zSxf_vrTn
 
+#EXTINF:-1, Piste 2
+https://drive.google.com/uc?export=download&confirm=t&id=1VsBmr1x9xUw-5l3d1kf8ajOzF4pNGgDK
 
+#EXTINF:-1, Piste 3
+https://drive.google.com/uc?export=download&confirm=t&id=12AoTSoZYQ4taDSVhSC6kOp8xwVm3vC5B
